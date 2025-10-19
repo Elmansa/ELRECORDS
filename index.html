@@ -75,6 +75,14 @@
             display: block;
         }
 
+        .admin-only {
+            display: none;
+        }
+
+        .admin-only.show {
+            display: block;
+        }
+
         #volumeSlider::-webkit-slider-thumb {
             appearance: none;
             width: 16px;
@@ -115,7 +123,496 @@
 
             // Initialize music player
             initMusicPlayer();
+            
+            // Initialize login form
+            document.getElementById('loginForm').addEventListener('submit', login);
         });
+
+        let currentTrackIndex = 0;
+        let tracks = [];
+        let isPlaying = false;
+        let isAdminLoggedIn = false;
+
+        // Admin login functions
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+
+        function hideLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('loginError').classList.add('hidden');
+            document.getElementById('loginForm').reset();
+        }
+
+        function login(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple authentication (in real app, this would be server-side)
+            if (username === 'admin' && password === 'elrecords2024') {
+                isAdminLoggedIn = true;
+                hideLoginModal();
+                showAdminFeatures();
+                
+                // Show success message
+                const welcome = document.getElementById('adminWelcome');
+                welcome.classList.remove('hidden');
+                document.getElementById('loginBtn').classList.add('hidden');
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            isAdminLoggedIn = false;
+            hideAdminFeatures();
+            document.getElementById('adminWelcome').classList.add('hidden');
+            document.getElementById('loginBtn').classList.remove('hidden');
+            
+            // Switch to home tab if currently on admin tab
+            if (document.getElementById('adminContent').classList.contains('active')) {
+                showTab('home');
+            }
+        }
+
+        function showAdminFeatures() {
+            // Show admin tab
+            document.getElementById('adminTab').classList.remove('admin-only');
+            document.getElementById('adminTab').classList.add('show');
+            
+            // Add admin controls to music player
+            const adminControls = document.createElement('div');
+            adminControls.id = 'adminMusicControls';
+            adminControls.className = 'mt-6 p-4 bg-red-600 bg-opacity-20 border border-red-500 rounded-lg';
+            adminControls.innerHTML = `
+                <h4 class="text-white font-semibold mb-3">🔧 کنترل‌های مدیر</h4>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="addNewTrack()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm transition-colors">
+                        ➕ آهنگ جدید
+                    </button>
+                    <button onclick="editTrack()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm transition-colors">
+                        ✏️ ویرایش آهنگ
+                    </button>
+                    <button onclick="deleteTrack()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm transition-colors">
+                        🗑️ حذف آهنگ
+                    </button>
+                    <button onclick="showStats()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm transition-colors">
+                        📊 آمار پخش
+                    </button>
+                </div>
+            `;
+            
+            const musicPlayer = document.querySelector('#musicContent .bg-black.bg-opacity-60');
+            if (musicPlayer && !document.getElementById('adminMusicControls')) {
+                musicPlayer.appendChild(adminControls);
+            }
+        }
+
+        function hideAdminFeatures() {
+            // Hide admin tab
+            document.getElementById('adminTab').classList.add('admin-only');
+            document.getElementById('adminTab').classList.remove('show');
+            
+            // Remove admin controls
+            const adminControls = document.getElementById('adminMusicControls');
+            if (adminControls) {
+                adminControls.remove();
+            }
+        }
+
+        function addNewTrack() {
+            // Show inline form for adding new track
+            const existingForm = document.querySelector('.admin-form');
+            if (existingForm) existingForm.remove();
+            
+            const form = document.createElement('div');
+            form.className = 'admin-form mt-4 p-4 bg-gray-900 rounded-lg border border-green-500';
+            form.innerHTML = `
+                <h5 class="text-green-400 font-medium mb-3">🎵 اضافه کردن آهنگ جدید</h5>
+                <div class="space-y-3">
+                    <input type="text" id="newTrackTitle" placeholder="نام آهنگ" class="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:border-green-500 focus:outline-none">
+                    <input type="text" id="newTrackArtist" placeholder="نام هنرمند" class="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:border-green-500 focus:outline-none">
+                    <input type="text" id="newTrackDuration" placeholder="مدت زمان (مثال: 3:45)" class="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:border-green-500 focus:outline-none">
+                    <input type="url" id="newTrackUrl" placeholder="لینک آهنگ (مثال: https://example.com/song.mp3)" class="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:border-green-500 focus:outline-none">
+                    <div class="text-xs text-gray-400 bg-gray-800 p-2 rounded">
+                        💡 نکته: لینک باید مستقیماً به فایل صوتی (mp3, wav, ogg) اشاره کند
+                    </div>
+                    <div class="flex space-x-2 space-x-reverse">
+                        <button onclick="saveNewTrack()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm transition-colors">
+                            💾 ذخیره
+                        </button>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded text-sm transition-colors">
+                            ❌ انصراف
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('adminMusicControls').appendChild(form);
+        }
+
+        function saveNewTrack() {
+            const title = document.getElementById('newTrackTitle').value;
+            const artist = document.getElementById('newTrackArtist').value;
+            const duration = document.getElementById('newTrackDuration').value;
+            const url = document.getElementById('newTrackUrl').value;
+            
+            if (title && artist && duration && url) {
+                // Validate URL format
+                try {
+                    new URL(url);
+                } catch {
+                    showAdminMessage('لطفاً لینک معتبری وارد کنید', 'red');
+                    return;
+                }
+                
+                // Create new track element
+                const trackList = document.querySelector('#musicContent .grid');
+                const newTrack = document.createElement('div');
+                newTrack.className = 'bg-black bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-red-800 hover-glow cursor-pointer track-item';
+                newTrack.setAttribute('data-src', url);
+                newTrack.setAttribute('data-title', title);
+                newTrack.setAttribute('data-artist', artist);
+                
+                newTrack.innerHTML = `
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <div class="w-16 h-16 bg-gradient-to-br from-red-600 to-red-800 rounded-lg flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-lg font-semibold text-white">${title}</h4>
+                            <p class="text-gray-400">${artist}</p>
+                            <p class="text-sm text-red-400">${duration}</p>
+                            <p class="text-xs text-green-400">🌐 آنلاین</p>
+                        </div>
+                    </div>
+                `;
+                
+                trackList.appendChild(newTrack);
+                
+                // Re-initialize track functionality
+                newTrack.addEventListener('click', () => {
+                    const trackItems = document.querySelectorAll('.track-item');
+                    const index = Array.from(trackItems).indexOf(newTrack);
+                    loadTrack(index);
+                });
+                
+                // Update tracks array
+                tracks.push({
+                    src: url,
+                    title: title,
+                    artist: artist,
+                    element: newTrack
+                });
+                
+                // Update stats
+                updateStats();
+                
+                showAdminMessage('آهنگ جدید با موفقیت اضافه شد! 🎉', 'green');
+                document.querySelector('.admin-form').remove();
+            } else {
+                showAdminMessage('لطفاً تمام فیلدها را پر کنید', 'red');
+            }
+        }
+
+        function updateStats() {
+            // Update track count
+            const trackCount = document.querySelector('#adminContent .grid .bg-black:first-child p.text-3xl');
+            if (trackCount) {
+                trackCount.textContent = tracks.length;
+            }
+            
+            // Update visitors (simulate random increase)
+            const visitorsCount = document.querySelector('#adminContent .grid .bg-black:nth-child(2) p.text-3xl');
+            if (visitorsCount) {
+                const currentVisitors = parseInt(visitorsCount.textContent.replace(',', ''));
+                visitorsCount.textContent = (currentVisitors + Math.floor(Math.random() * 50) + 10).toLocaleString();
+            }
+        }
+
+        function editTrack() {
+            showAdminMessage('برای ویرایش، روی آهنگ مورد نظر کلیک کنید 📝', 'blue');
+            
+            // Add edit functionality to existing tracks
+            const trackItems = document.querySelectorAll('.track-item');
+            trackItems.forEach((track, index) => {
+                track.style.border = '2px solid #3b82f6';
+                track.style.cursor = 'pointer';
+                
+                const editHandler = () => {
+                    showEditForm(track, index);
+                    // Remove edit mode
+                    trackItems.forEach(t => {
+                        t.style.border = '';
+                        t.removeEventListener('click', editHandler);
+                    });
+                };
+                
+                track.addEventListener('click', editHandler);
+            });
+        }
+
+        function showEditForm(trackElement, index) {
+            const existingForm = document.querySelector('.admin-form');
+            if (existingForm) existingForm.remove();
+            
+            const track = tracks[index];
+            const form = document.createElement('div');
+            form.className = 'admin-form mt-4 p-4 bg-gray-900 rounded-lg border border-blue-500';
+            form.innerHTML = `
+                <h5 class="text-blue-400 font-medium mb-3">✏️ ویرایش آهنگ</h5>
+                <div class="space-y-3">
+                    <input type="text" id="editTrackTitle" value="${track.title}" class="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                    <input type="text" id="editTrackArtist" value="${track.artist}" class="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                    <input type="url" id="editTrackUrl" value="${track.src}" class="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                    <div class="flex space-x-2 space-x-reverse">
+                        <button onclick="saveEditTrack(${index})" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm transition-colors">
+                            💾 ذخیره تغییرات
+                        </button>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded text-sm transition-colors">
+                            ❌ انصراف
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('adminMusicControls').appendChild(form);
+        }
+
+        function saveEditTrack(index) {
+            const title = document.getElementById('editTrackTitle').value;
+            const artist = document.getElementById('editTrackArtist').value;
+            const url = document.getElementById('editTrackUrl').value;
+            
+            if (title && artist && url) {
+                // Update track data
+                tracks[index].title = title;
+                tracks[index].artist = artist;
+                tracks[index].src = url;
+                
+                // Update track element
+                const trackElement = tracks[index].element;
+                trackElement.setAttribute('data-title', title);
+                trackElement.setAttribute('data-artist', artist);
+                trackElement.setAttribute('data-src', url);
+                
+                const titleEl = trackElement.querySelector('h4');
+                const artistEl = trackElement.querySelector('p.text-gray-400');
+                titleEl.textContent = title;
+                artistEl.textContent = artist;
+                
+                showAdminMessage('آهنگ با موفقیت ویرایش شد! ✅', 'blue');
+                document.querySelector('.admin-form').remove();
+            } else {
+                showAdminMessage('لطفاً تمام فیلدها را پر کنید', 'red');
+            }
+        }
+
+        function deleteTrack() {
+            showAdminMessage('برای حذف، روی آهنگ مورد نظر دوبار کلیک کنید 🗑️', 'red');
+            
+            // Add delete functionality to existing tracks
+            const trackItems = document.querySelectorAll('.track-item');
+            trackItems.forEach((track, index) => {
+                track.style.border = '2px solid #dc2626';
+                track.style.cursor = 'pointer';
+                
+                let clickCount = 0;
+                const deleteHandler = () => {
+                    clickCount++;
+                    if (clickCount === 1) {
+                        track.style.backgroundColor = 'rgba(220, 38, 38, 0.2)';
+                        showAdminMessage('یک بار دیگر کلیک کنید تا حذف شود', 'yellow');
+                        setTimeout(() => {
+                            clickCount = 0;
+                            track.style.backgroundColor = '';
+                        }, 3000);
+                    } else if (clickCount === 2) {
+                        // Remove from tracks array
+                        tracks.splice(index, 1);
+                        // Remove element
+                        track.remove();
+                        // Update stats
+                        updateStats();
+                        showAdminMessage('آهنگ با موفقیت حذف شد! 🗑️', 'red');
+                        
+                        // Remove delete mode from remaining tracks
+                        trackItems.forEach(t => {
+                            if (t !== track) {
+                                t.style.border = '';
+                                t.removeEventListener('click', deleteHandler);
+                            }
+                        });
+                    }
+                };
+                
+                track.addEventListener('click', deleteHandler);
+            });
+        }
+
+        function showStats() {
+            const existingStats = document.querySelector('.stats-panel');
+            if (existingStats) {
+                existingStats.remove();
+                return;
+            }
+            
+            const stats = document.createElement('div');
+            stats.className = 'stats-panel mt-4 p-4 bg-purple-600 bg-opacity-20 border border-purple-500 rounded-lg';
+            
+            let statsHTML = `
+                <h5 class="text-purple-400 font-medium mb-3">📊 آمار پخش آهنگ‌ها</h5>
+                <div class="space-y-2 text-sm">
+            `;
+            
+            let totalPlays = 0;
+            tracks.forEach((track, index) => {
+                const plays = Math.floor(Math.random() * 300) + 50; // Random plays between 50-350
+                totalPlays += plays;
+                statsHTML += `
+                    <div class="flex justify-between">
+                        <span class="text-gray-300">${track.title}:</span>
+                        <span class="text-purple-300">${plays} پخش</span>
+                    </div>
+                `;
+            });
+            
+            if (tracks.length === 0) {
+                statsHTML += `
+                    <div class="text-center text-gray-400 py-4">
+                        هنوز آهنگی اضافه نشده است
+                    </div>
+                `;
+            } else {
+                statsHTML += `
+                    <hr class="border-purple-500 my-2">
+                    <div class="flex justify-between font-semibold">
+                        <span class="text-white">مجموع:</span>
+                        <span class="text-purple-300">${totalPlays} پخش</span>
+                    </div>
+                `;
+            }
+            
+            statsHTML += `</div>`;
+            stats.innerHTML = statsHTML;
+            
+            document.getElementById('adminMusicControls').appendChild(stats);
+        }
+
+        function showMessages() {
+            const existingPanel = document.querySelector('.messages-panel');
+            if (existingPanel) {
+                existingPanel.remove();
+                return;
+            }
+            
+            const messages = document.createElement('div');
+            messages.className = 'messages-panel mt-4 p-4 bg-blue-600 bg-opacity-20 border border-blue-500 rounded-lg';
+            messages.innerHTML = `
+                <h5 class="text-blue-400 font-medium mb-3">💬 پیام‌های اخیر</h5>
+                <div class="space-y-3 text-sm max-h-60 overflow-y-auto">
+                    <div class="bg-gray-800 p-3 rounded">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-white font-medium">علی احمدی</span>
+                            <span class="text-gray-400 text-xs">2 ساعت پیش</span>
+                        </div>
+                        <p class="text-gray-300">سلام، آهنگ‌هاتون عالیه! می‌تونم برای همکاری باهاتون تماس بگیرم؟</p>
+                        <button class="mt-2 bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs transition-colors">پاسخ</button>
+                    </div>
+                    <div class="bg-gray-800 p-3 rounded">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-white font-medium">سارا محمدی</span>
+                            <span class="text-gray-400 text-xs">5 ساعت پیش</span>
+                        </div>
+                        <p class="text-gray-300">آیا امکان سفارش آهنگ اختصاصی وجود داره؟</p>
+                        <button class="mt-2 bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs transition-colors">پاسخ</button>
+                    </div>
+                    <div class="bg-gray-800 p-3 rounded">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-white font-medium">رضا کریمی</span>
+                            <span class="text-gray-400 text-xs">1 روز پیش</span>
+                        </div>
+                        <p class="text-gray-300">ممنون از آهنگ‌های فوق‌العاده‌تون 🎵</p>
+                        <span class="text-green-400 text-xs">✓ پاسخ داده شده</span>
+                    </div>
+                </div>
+            `;
+            
+            // Insert after admin controls
+            const adminControls = document.getElementById('adminMusicControls');
+            if (adminControls) {
+                adminControls.parentNode.insertBefore(messages, adminControls.nextSibling);
+            }
+        }
+
+        function showSettings() {
+            const existingPanel = document.querySelector('.settings-panel');
+            if (existingPanel) {
+                existingPanel.remove();
+                return;
+            }
+            
+            const settings = document.createElement('div');
+            settings.className = 'settings-panel mt-4 p-4 bg-purple-600 bg-opacity-20 border border-purple-500 rounded-lg';
+            settings.innerHTML = `
+                <h5 class="text-purple-400 font-medium mb-3">⚙️ تنظیمات سایت</h5>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-white text-sm font-medium mb-2">نام لیبل</label>
+                        <input type="text" value="EL RECORDS" class="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:border-purple-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-white text-sm font-medium mb-2">توضیحات</label>
+                        <textarea class="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:border-purple-500 focus:outline-none h-20">لیبل موسیقی مستقل و حرفه‌ای</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-white text-sm font-medium mb-2">ایمیل تماس</label>
+                        <input type="email" value="info@elrecords.com" class="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:border-purple-500 focus:outline-none">
+                    </div>
+                    <div class="flex space-x-2 space-x-reverse">
+                        <button onclick="saveSettings()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm transition-colors">
+                            💾 ذخیره تغییرات
+                        </button>
+                        <button onclick="document.querySelector('.settings-panel').remove()" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded text-sm transition-colors">
+                            ❌ انصراف
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Insert after admin controls
+            const adminControls = document.getElementById('adminMusicControls');
+            if (adminControls) {
+                adminControls.parentNode.insertBefore(settings, adminControls.nextSibling);
+            }
+        }
+
+        function saveSettings() {
+            showAdminMessage('تنظیمات با موفقیت ذخیره شد! ⚙️', 'purple');
+            setTimeout(() => {
+                document.querySelector('.settings-panel').remove();
+            }, 1000);
+        }
+
+        function showAdminMessage(message, color) {
+            // Remove existing messages
+            const existingMessages = document.querySelectorAll('.admin-message');
+            existingMessages.forEach(msg => msg.remove());
+            
+            const msg = document.createElement('div');
+            msg.className = `admin-message mt-3 p-3 bg-${color}-600 bg-opacity-20 border border-${color}-500 rounded-lg`;
+            msg.innerHTML = `<p class="text-${color}-300 text-sm">${message}</p>`;
+            
+            document.getElementById('adminMusicControls').appendChild(msg);
+            
+            // Remove message after 4 seconds
+            setTimeout(() => {
+                msg.remove();
+            }, 4000);
+        }
 
         function showTab(tabName) {
             // Hide all tab contents
@@ -132,10 +629,6 @@
             // Add active class to selected tab button
             document.getElementById(tabName + 'Tab').classList.add('active');
         }
-
-        let currentTrackIndex = 0;
-        let tracks = [];
-        let isPlaying = false;
 
         function initMusicPlayer() {
             const audioPlayer = document.getElementById('audioPlayer');
@@ -292,8 +785,24 @@
                 <p class="text-xl text-gray-300 font-light">لیبل موسیقی مستقل و حرفه‌ای</p>
             </div>
             
+            <!-- Login Button -->
+            <div class="mb-6">
+                <button onclick="showLoginModal()" id="loginBtn" class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-lg font-medium transition-all duration-300 glow">
+                    <svg class="w-5 h-5 inline-block ml-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                    ورود مدیر
+                </button>
+                <div id="adminWelcome" class="hidden mt-4 bg-green-600 bg-opacity-20 border border-green-500 rounded-lg p-4 max-w-md mx-auto">
+                    <p class="text-green-300 font-medium">خوش آمدید مدیر عزیز! 👋</p>
+                    <button onclick="logout()" class="mt-2 bg-red-500 hover:bg-red-600 px-4 py-1 rounded text-sm transition-colors">
+                        خروج
+                    </button>
+                </div>
+            </div>
+
             <!-- Navigation Tabs -->
-            <nav class="max-w-2xl mx-auto">
+            <nav class="max-w-3xl mx-auto">
                 <div class="flex justify-center space-x-2 space-x-reverse bg-black bg-opacity-40 rounded-xl p-2 border border-red-900">
                     <button onclick="showTab('home')" id="homeTab" class="tab-button active px-6 py-3 rounded-lg font-medium transition-all duration-300">
                         <svg class="w-5 h-5 inline-block ml-2" fill="currentColor" viewBox="0 0 24 24">
@@ -318,6 +827,12 @@
                             <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
                         </svg>
                         تماس
+                    </button>
+                    <button onclick="showTab('admin')" id="adminTab" class="tab-button admin-only px-6 py-3 rounded-lg font-medium transition-all duration-300">
+                        <svg class="w-5 h-5 inline-block ml-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                        </svg>
+                        مدیریت
                     </button>
                 </div>
             </nav>
@@ -557,6 +1072,142 @@
                     </div>
                 </section>
             </div>
+
+            <!-- Admin Tab Content -->
+            <div id="adminContent" class="tab-content">
+                <section class="py-16 px-6">
+                    <div class="max-w-4xl mx-auto">
+                        <h2 class="text-4xl font-bold text-red-500 text-center mb-12">🛡️ پنل مدیریت</h2>
+                        
+                        <!-- Admin Stats -->
+                        <div class="grid md:grid-cols-3 gap-6 mb-8">
+                            <div class="bg-black bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-red-800 glow">
+                                <h3 class="text-xl font-semibold text-white mb-2">🎵 آهنگ‌های منتشر شده</h3>
+                                <p class="text-3xl font-bold text-red-400">4</p>
+                                <p class="text-sm text-gray-400 mt-2">+2 این ماه</p>
+                            </div>
+                            <div class="bg-black bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-red-800 glow">
+                                <h3 class="text-xl font-semibold text-white mb-2">👥 بازدید کنندگان</h3>
+                                <p class="text-3xl font-bold text-green-400">1,247</p>
+                                <p class="text-sm text-gray-400 mt-2">+156 این هفته</p>
+                            </div>
+                            <div class="bg-black bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-red-800 glow">
+                                <h3 class="text-xl font-semibold text-white mb-2">📧 پیام‌های جدید</h3>
+                                <p class="text-3xl font-bold text-yellow-400">12</p>
+                                <p class="text-sm text-gray-400 mt-2">نیاز به پاسخ</p>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="bg-black bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-red-800 glow mb-8">
+                            <h3 class="text-2xl font-semibold text-white mb-6">⚡ عملیات سریع</h3>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <button onclick="addNewTrack()" class="bg-red-600 hover:bg-red-700 p-4 rounded-lg transition-colors text-right group">
+                                    <div class="flex items-center space-x-3 space-x-reverse">
+                                        <span class="text-2xl">🎵</span>
+                                        <div>
+                                            <h4 class="font-semibold text-white mb-1">اضافه کردن آهنگ</h4>
+                                            <p class="text-gray-300 text-sm">اضافه کردن آهنگ جدید با لینک</p>
+                                        </div>
+                                    </div>
+                                </button>
+                                <button onclick="showMessages()" class="bg-blue-600 hover:bg-blue-700 p-4 rounded-lg transition-colors text-right group">
+                                    <div class="flex items-center space-x-3 space-x-reverse">
+                                        <span class="text-2xl">💬</span>
+                                        <div>
+                                            <h4 class="font-semibold text-white mb-1">مدیریت پیام‌ها</h4>
+                                            <p class="text-gray-300 text-sm">مشاهده و پاسخ به پیام‌های کاربران</p>
+                                        </div>
+                                    </div>
+                                </button>
+                                <button onclick="showStats()" class="bg-green-600 hover:bg-green-700 p-4 rounded-lg transition-colors text-right group">
+                                    <div class="flex items-center space-x-3 space-x-reverse">
+                                        <span class="text-2xl">📊</span>
+                                        <div>
+                                            <h4 class="font-semibold text-white mb-1">آمار پخش</h4>
+                                            <p class="text-gray-300 text-sm">مشاهده آمار پخش آهنگ‌ها</p>
+                                        </div>
+                                    </div>
+                                </button>
+                                <button onclick="showSettings()" class="bg-purple-600 hover:bg-purple-700 p-4 rounded-lg transition-colors text-right group">
+                                    <div class="flex items-center space-x-3 space-x-reverse">
+                                        <span class="text-2xl">⚙️</span>
+                                        <div>
+                                            <h4 class="font-semibold text-white mb-1">تنظیمات سایت</h4>
+                                            <p class="text-gray-300 text-sm">ویرایش اطلاعات و تنظیمات</p>
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="bg-black bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-red-800 glow">
+                            <h3 class="text-2xl font-semibold text-white mb-6">📈 فعالیت‌های اخیر</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center space-x-4 space-x-reverse p-3 bg-gray-800 rounded-lg">
+                                    <span class="text-green-400">✅</span>
+                                    <div class="flex-1">
+                                        <p class="text-white">آهنگ جدید "نام آهنگ چهارم" منتشر شد</p>
+                                        <p class="text-gray-400 text-sm">2 ساعت پیش</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-4 space-x-reverse p-3 bg-gray-800 rounded-lg">
+                                    <span class="text-blue-400">💬</span>
+                                    <div class="flex-1">
+                                        <p class="text-white">پیام جدید از کاربر دریافت شد</p>
+                                        <p class="text-gray-400 text-sm">5 ساعت پیش</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-4 space-x-reverse p-3 bg-gray-800 rounded-lg">
+                                    <span class="text-yellow-400">📊</span>
+                                    <div class="flex-1">
+                                        <p class="text-white">بازدید سایت به 1000 نفر رسید</p>
+                                        <p class="text-gray-400 text-sm">1 روز پیش</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm hidden flex items-center justify-center z-50">
+            <div class="bg-black bg-opacity-90 border border-red-900 rounded-2xl p-8 max-w-md w-full mx-4 glow">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-red-500 mb-2">🔐 ورود مدیر</h2>
+                    <p class="text-gray-400">برای دسترسی به پنل مدیریت وارد شوید</p>
+                </div>
+                
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label for="username" class="block text-white font-medium mb-2">نام کاربری</label>
+                        <input type="text" id="username" name="username" class="w-full bg-gray-900 border border-red-800 rounded-lg px-4 py-3 text-white focus:border-red-500 focus:outline-none" placeholder="نام کاربری خود را وارد کنید">
+                    </div>
+                    
+                    <div>
+                        <label for="password" class="block text-white font-medium mb-2">رمز عبور</label>
+                        <input type="password" id="password" name="password" class="w-full bg-gray-900 border border-red-800 rounded-lg px-4 py-3 text-white focus:border-red-500 focus:outline-none" placeholder="رمز عبور خود را وارد کنید">
+                    </div>
+                    
+                    <div id="loginError" class="hidden bg-red-600 bg-opacity-20 border border-red-500 rounded-lg p-3">
+                        <p class="text-red-300 text-sm">❌ نام کاربری یا رمز عبور اشتباه است!</p>
+                    </div>
+                    
+                    <div class="flex space-x-4 space-x-reverse">
+                        <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-3 rounded-lg transition-colors">
+                            🚀 ورود
+                        </button>
+                        <button type="button" onclick="hideLoginModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 rounded-lg transition-colors">
+                            ❌ انصراف
+                        </button>
+                    </div>
+                </form>
+                
+
+            </div>
         </div>
 
         <!-- Footer -->
@@ -564,5 +1215,5 @@
             <p class="text-gray-400 text-sm">© 2024 EL RECORDS. تمامی حقوق محفوظ است.</p>
         </footer>
     </main>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99121a6fa3e9dbce',t:'MTc2MDg5NjA3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9912797275c85d40',t:'MTc2MDg5OTk2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
