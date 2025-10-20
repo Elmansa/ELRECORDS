@@ -7,25 +7,7 @@
     "cover": "https://upmusics.com/wp-content/uploads/2021/09/Reza-Malekzadeh-Aram-Aram.jpg",
     "description": ".",
     "lyrics": ""
-  },
-  {
-    "id": "track-2",
-    "title": "امشب - Emshab",
-    "artist": "Erfan Tahmasbi",
-    "src": "https://irsv.upmusics.com/dlw/Erfan%20Tahmasbi%20-%20Emshab%20(320).mp3",
-    "cover": "https://www.ganja2music.com/Image/Post/9.2025/Erfan%20Tahmasbi%20-%20Emshab.jpg",
-    "description": "",
-    "lyrics": ""
-  },
-  {
-    "id": "track-3",
-    "title": "دریغ - Darigh",
-    "artist": "Alireza Talischi",
-    "src": "https://dl.ganja2music.com/Ganja2Music/Archive/A/Alireza%20Talischi/Single/Alireza%20Talischi%20-%20Darigh.mp3",
-    "cover": "https://www.ganja2music.com/Image/Post/10.2025/Alireza%20Talischi%20-%20Darigh.jpg",
-    "description": "",
-    "lyrics": ""
-  },
+  }
   {
     "id": "track-4",
     "title": "الماس - almas",
@@ -45,3 +27,4 @@
     "lyrics": ""
   }
 ]
+
