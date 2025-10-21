@@ -9,6 +9,7 @@ async function fetchSongs(){
 
 /* ---------- MUSIC LIST PAGE (music.html) ---------- */
 async function renderPlaylist(containerId){
+async function renderPlaylist(containerId){
   const songs = await fetchSongs();
   const container = document.getElementById(containerId);
   if(!container) return;
@@ -39,8 +40,8 @@ async function renderPlaylist(containerId){
         </div>
         <div class="desc">${escapeHtml(s.description || '')}</div>
         <div class="player-row">
-          <button class="play-btn" data-src="${s.src}" data-index="${idx}">▶ پخش</button>
-          <button class="small-btn" data-src="${s.src}" data-index="${idx}">افزودن به پلیر</button>
+          <button class="play-btn" data-id="${s.id}">▶ پخش</button>
+          <button class="small-btn" data-id="${s.id}">افزودن به پلیر</button>
         </div>
       `;
       grid.appendChild(card);
@@ -49,9 +50,9 @@ async function renderPlaylist(containerId){
     // attach play behavior again (for filtered list)
     grid.querySelectorAll('.play-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const src = btn.getAttribute('data-src');
-        const index = Number(btn.getAttribute('data-index'));
-        await globalPlayer.loadAndPlayByIndex(index);
+        const id = btn.getAttribute('data-id');
+        const index = songs.findIndex(s => s.id === id);
+        if(index !== -1) await globalPlayer.loadAndPlayByIndex(index);
       });
     });
   }
@@ -251,4 +252,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   // If on track.html -> render track page
   if(document.getElementById('track-root')) renderTrackPage();
 });
+
 
