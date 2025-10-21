@@ -12,36 +12,65 @@ async function renderPlaylist(containerId){
   const songs = await fetchSongs();
   const container = document.getElementById(containerId);
   if(!container) return;
-  if(songs.length === 0){ container.innerHTML = `<p style="text-align:center;color:#777">هنوز آهنگی اضافه نشده.</p>`; return; }
+  if(songs.length === 0){ 
+    container.innerHTML = `<p style="text-align:center;color:#777">هنوز آهنگی اضافه نشده.</p>`; 
+    return; 
+  }
 
   const grid = document.createElement('div');
   grid.className = 'grid';
-
-  songs.forEach((s, idx) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <img class="cover" src="${s.cover}" alt="${escapeHtml(s.title)}" />
-      <div class="meta">
-        <div>
-          <div class="title">${escapeHtml(s.title)}</div>
-          <div class="artist">${escapeHtml(s.artist)}</div>
-        </div>
-        <div>
-          <a class="small-btn" href="track.html?id=${encodeURIComponent(s.id)}">صفحهٔ ترک</a>
-        </div>
-      </div>
-      <div class="desc">${escapeHtml(s.description || '')}</div>
-      <div class="player-row">
-        <button class="play-btn" data-src="${s.src}" data-index="${idx}">▶ پخش</button>
-        <button class="small-btn" data-src="${s.src}" data-index="${idx}">افزودن به پلیر</button>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-
   container.appendChild(grid);
 
+  function renderList(list){
+    grid.innerHTML = '';
+    list.forEach((s, idx) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <img class="cover" src="${s.cover}" alt="${escapeHtml(s.title)}" />
+        <div class="meta">
+          <div>
+            <div class="title">${escapeHtml(s.title)}</div>
+            <div class="artist">${escapeHtml(s.artist)}</div>
+          </div>
+          <div>
+            <a class="small-btn" href="track.html?id=${encodeURIComponent(s.id)}">صفحهٔ ترک</a>
+          </div>
+        </div>
+        <div class="desc">${escapeHtml(s.description || '')}</div>
+        <div class="player-row">
+          <button class="play-btn" data-src="${s.src}" data-index="${idx}">▶ پخش</button>
+          <button class="small-btn" data-src="${s.src}" data-index="${idx}">افزودن به پلیر</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // attach play behavior again (for filtered list)
+    grid.querySelectorAll('.play-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const src = btn.getAttribute('data-src');
+        const index = Number(btn.getAttribute('data-index'));
+        await globalPlayer.loadAndPlayByIndex(index);
+      });
+    });
+  }
+
+  renderList(songs);
+
+  // 🔍 search functionality
+  const searchInput = document.getElementById('searchInput');
+  if(searchInput){
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      const filtered = songs.filter(s =>
+        s.title.toLowerCase().includes(q) || 
+        s.artist.toLowerCase().includes(q)
+      );
+      renderList(filtered);
+    });
+  }
+}
   // attach play behavior
   container.querySelectorAll('.play-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -222,3 +251,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   // If on track.html -> render track page
   if(document.getElementById('track-root')) renderTrackPage();
 });
+
