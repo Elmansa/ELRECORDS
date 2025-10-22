@@ -1,6 +1,10 @@
 // app.js - simple SPA-like helpers for music listing + player + track page
 // Works with songs.json structure.
-
+(async ()=>{
+  const res = await fetch('songs.json?v='+Date.now());
+  const text = await res.text();
+  console.log("RAW RESPONSE:", text.slice(0,200));
+})();
 async function fetchSongs(){
   const res = await fetch('songs.json');
   const data = await res.json();
@@ -222,3 +226,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   // If on track.html -> render track page
   if(document.getElementById('track-root')) renderTrackPage();
 });
+
