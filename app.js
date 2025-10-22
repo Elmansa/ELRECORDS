@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if(document.getElementById('playlist-root')) renderPlaylist('playlist-root');
   // If on track.html -> render track page
   if(document.getElementById('track-root')) renderTrackPage();
-});        <button class="small-btn" data-src="${s.src}" data-index="${idx}">افزودن به پلیر</button>
+});        <button> class="small-btn" data-src="${s.src}" data-index="${idx}">افزودن به پلیر</button>
       </div>
     `;
     grid.appendChild(card);
@@ -626,6 +626,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // If on track.html -> render track page
   if(document.getElementById('track-root')) renderTrackPage();
 });
+
 
 
 
