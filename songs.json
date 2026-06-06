@@ -1,31 +1,4 @@
-[
-  {
-    "id": "track-1",
-    "title": "دورت بگردم - Doret Begardam",
-    "artist": "Danoosh",
-    "src": "Danoosh-Doret-Begardam-320.mp3",
-    "cover": "https://rozmusic.com/wp-content/uploads/2020/07/Danoosh-Doret-Begardam.jpg",
-    "description": ".",
-    "lyrics": ""
-  },
-    {
-    "id": "track-2",
-    "title": "دورت بگردم(ورژن ارامش بخش)- Doret Begardam(Ambience version)",
-    "artist": "Danoosh",
-    "src": "doret beg.mp3",
-    "cover": "InShot_20251023_012443836.jpg",
-    "description": "PRODUCER:ELRECORDS   ARRANGEMENT:ELMAN",
-    "lyrics": ""
-    },
-    {
-    "id": "track-3",
-    "title":"هیسلریم - Hislerim (Elman Remake)",
-    "artist": "Serhat Durums Ft Zerrin",
-    "src": "hislerim remakee.mp3",
-    "cover": "InShot_20251029_015452460.jpg",
-    "description": "PRODUCER:ELRECORDS   ARRANGEMET:ELMAN",
-    "lyrics": ""
-    },
+
     {
     "id": "track-4",
     "title": "تو همونی - To Hamooni",
@@ -44,15 +17,6 @@
     "description": "ARRANGMENT-Mix Master : Elman. Producer : ELRECORDS",
     "lyrics": ""
       },
-        {
-    "id": "track-6",
-    "title": "یلدا - Yalda",
-    "artist": "Hamed Mahzarniya - Elman",
-    "src": "yalda.mp3",
-    "cover": "InShot_20251212_150843541.jpg",
-    "description": "Remix : Elman. Producer : ELRECORDS",
-    "lyrics": ""
-      },
     {
     "id": "track-7",
     "title": "حاشیه - Hashiye",
@@ -65,9 +29,18 @@
       {
     "id": "track-8",
     "title": "گیتار کولی - Guitar Koli",
-    "artist": "Puzzle Band - Elrecords",
+    "artist": "Kiyarash - Elrecords",
     "src": "Guitar Koli - Elrecords  Remix.mp3",
     "cover": "InShot_20260605_191938371.jpg",
+    "description": "Remix : Elrecords. Producer : ELRECORDS",
+    "lyrics": ""
+    },
+      {
+    "id": "track-9",
+    "title": "چی میشه بعدت - Chi Mishe Badet",
+    "artist": "Kiyarash - Elrecords",
+    "src": "Project_31.mp3",
+    "cover": "InShot_20260606_190500541.jpg",
     "description": "Remix : Elrecords. Producer : ELRECORDS",
     "lyrics": ""
     }
