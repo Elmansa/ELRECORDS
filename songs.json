@@ -74,8 +74,17 @@
     "id": "track-13",
     "title": "این بده - In Bade",
     "artist": "Yasin - Elrecords",
-    "src": "Project_38",
+    "src": "Project_38.mp3",
     "cover": "InShot_20260611_202141611.jpg",
+    "description": "Remix : Elrecords. Producer : ELRECORDS",
+    "lyrics": ""
+    },
+    {
+    "id": "track-14",
+    "title": "دنیای دیگه - Donyaye Dige",
+    "artist": "Kiyarash - Elrecords",
+    "src": "Donyaye Dige Remix.mp3",
+    "cover": "InShot_20260617_152258007.jpg",
     "description": "Remix : Elrecords. Producer : ELRECORDS",
     "lyrics": ""
     }
